@@ -42,7 +42,10 @@ public class AddItemFragment extends Fragment {
         mTimeSpinner = (TimePicker) view.findViewById(R.id.timePicker);
         mTimeSpinner.setIs24HourView(true);
         mCreateButton = (Button) view.findViewById(R.id.create_button);
+
+        // if the name is not null, then the program is updating an item
         if(getActivity().getIntent().getSerializableExtra(CardFragment.TodoCardHolder.NAME)!=null){
+            mTimeSpinner.setHour(getActivity().getIntent().getIntExtra(CardFragment.TodoCardHolder.TIME,0));
             mDescription.setText(getActivity().getIntent().getSerializableExtra(CardFragment.TodoCardHolder.NAME).toString());
             mCreateButton.setText("Update");
         }
@@ -52,12 +55,12 @@ public class AddItemFragment extends Fragment {
         mCreateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Todo: Make the create button actually create a unique todo item
                 if( getActivity().getIntent().getSerializableExtra(CardFragment.TodoCardHolder.UUID)!=null){
                     mCreateButton.setText("Update");
                     TodoItem item = mItemHolder.getItem(UUID.fromString(getActivity().getIntent().getSerializableExtra(CardFragment.TodoCardHolder.UUID).toString()));
-
+                    item.setTimeRemaining(mTimeSpinner.getHour());
                     item.setName(mDescription.getText().toString());
+
                     mItemHolder.updateItem(item);
 
                 }
@@ -70,7 +73,6 @@ public class AddItemFragment extends Fragment {
         });
 
 
-        //Todo: Add a timepicker to the set time value
         return view;
     }
 

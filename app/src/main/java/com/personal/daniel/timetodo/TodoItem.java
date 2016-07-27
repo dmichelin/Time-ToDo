@@ -29,38 +29,18 @@ public class TodoItem {
         mUUID = UUID.randomUUID();
         mName = name;
         mTimeRemaining = duration;
-        mTimer = new CountDownTimer(duration*1000,1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                mTimeRemaining--;
-            }
 
-            @Override
-            public void onFinish() {
-
-            }
-        };
     }
     public TodoItem(UUID id,int duration){
         mUUID = id;
-        mTimer = new CountDownTimer(duration*1000,1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                mTimeRemaining--;
-            }
-
-            @Override
-            public void onFinish() {
-
-            }
-        };
+        mTimeRemaining = duration;
 
     }
     public UUID getUUID() {
         return mUUID;
     }
-    public void startTimer(){
-        mTimer.start();
+    public void setTimeRemaining( int time){
+        mTimeRemaining=time;
     }
 
     public int getTimeRemaining(){

@@ -60,15 +60,30 @@ public class TodoItemHolder {
         return items;
     }
 
+    /**
+     * Adds the item in to the database using an item
+     * @param item
+     */
     public void addItem(TodoItem item){
         ContentValues v = getContentValues(item);
 
         mItemDb.insert(ItemDbSchema.ItemTable.NAME,null,v);
     }
+
+    /**
+     * Constructs and adds an item in to the database
+     * @param length
+     * @param title
+     */
     public void addItem(int length, String title){
         addItem(new TodoItem(length,title));
     }
 
+    /**
+     * Returns an item with a specific UUID
+     * @param id
+     * @return
+     */
     public TodoItem getItem(UUID id){
         ItemCursorWrapper cursor = queryCrimes(
                 ItemDbSchema.ItemTable.Cols.UUID + " = ?",
@@ -94,6 +109,12 @@ public class TodoItemHolder {
                 new String[] { uuid });
     }
 
+    /**
+     * Nabbed from a previous application. Queries a list of items.
+     * @param whereClause
+     * @param whereArgs
+     * @return
+     */
     private ItemCursorWrapper queryCrimes(String whereClause, String[] whereArgs) {
         Cursor cursor = mItemDb.query(
                 ItemDbSchema.ItemTable.NAME,

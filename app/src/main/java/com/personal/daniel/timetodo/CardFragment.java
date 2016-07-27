@@ -2,6 +2,7 @@ package com.personal.daniel.timetodo;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -23,7 +24,8 @@ import java.util.List;
 public class CardFragment extends Fragment {
 
 
-    private FloatingActionButton mAddButton;
+    private Button mAddButton;
+    private Button mStartButton;
     private TodoItemHolder mItemHolder;
     private CardAdapter mAdapter;
     private RecyclerView mRecyclerView;
@@ -34,6 +36,7 @@ public class CardFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+        // Create the view
         super.onCreateView(inflater,container,savedInstanceState);
 
         View view = inflater.inflate(R.layout.activity_scrolling,container,false);
@@ -50,7 +53,7 @@ public class CardFragment extends Fragment {
         mRecyclerView.setLayoutManager(llm);
 
         updateUI();
-        mAddButton = (FloatingActionButton) view.findViewById(R.id.add_button);
+        mAddButton = (Button) view.findViewById(R.id.add_item_button);
         mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -62,8 +65,44 @@ public class CardFragment extends Fragment {
             }
         });
 
+        mStartButton= (Button) view.findViewById(R.id.start_timer_button);
+        mStartButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startTimer();
+            }
+
+        });
+
+
 
         return view;
+    }
+
+    /**
+     * Provides functionality for the timer side of the application.
+     */
+    public void startTimer(){
+        TodoItem item = mAdapter.getItem(0);
+        if (!item.equals(null)) {
+            int time = item.getTimeRemaining();
+            CountDownTimer timer = new CountDownTimer(time * 1000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    Toast.makeText(getContext(), millisUntilFinished+"", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFinish() {
+                    Toast.makeText(getContext(), "Finished timer", Toast.LENGTH_SHORT).show();
+                    mAdapter.onItemDismiss(0);
+                    if( !(mAdapter.getItem(0)==null) ){
+                        startTimer();
+                    }
+                }
+            };
+            timer.start();
+        }
     }
 
     @Override
@@ -77,7 +116,6 @@ public class CardFragment extends Fragment {
     // This is the adapter for the view
     public class CardAdapter extends RecyclerView.Adapter<TodoCardHolder> implements ItemTouchAdapter {
 
-        //Todo: Create an onclick listener to open a todo detail. Create corresponding fragment
 
 
 
@@ -87,11 +125,28 @@ public class CardFragment extends Fragment {
             this.mItemList = list;
         }
 
+        /**
+         * Returns the item at a given position
+         * @param pos
+         * @return
+         */
+        public TodoItem getItem(int pos){
+            if(pos < mItemList.size()){
+                return  mItemList.get(pos);
+            }
+            else return null;
+        }
+
         public void setItemList(List<TodoItem> itemList) {
             mItemList = itemList;
         }
 
-        //Todo: Fix this, it currently uses the temporary list. Must implement methods to
+        /** Currently not implemented. Provides adapter functionality to move items in a list from holding it down
+         *
+         * @param fromPos
+         * @param toPos
+         * @return
+         */
         @Override
         public boolean onItemMove(int fromPos, int toPos){
             if(fromPos<toPos){
@@ -114,7 +169,6 @@ public class CardFragment extends Fragment {
          */
         @Override
         public void onItemDismiss(int pos){
-            String posText = pos +"";
 
             TodoItem itemToRemove = mItemList.get(pos);
             mItemHolder.delete(itemToRemove);
@@ -122,16 +176,24 @@ public class CardFragment extends Fragment {
             notifyItemRemoved(pos);
         }
 
+
+
         @Override
         public int getItemCount(){
             return mItemList.size();
         }
 
+        /**
+         *  Provides functionality to each card
+         * @param cardHolder
+         * @param i
+         */
         @Override
         public void onBindViewHolder(TodoCardHolder cardHolder, int i){
             TodoItem item = mItemList.get(i);
             cardHolder.setItem(item);
             cardHolder.vName.setText(item.getName());
+            cardHolder.vTime.setText(item.getTimeRemaining()+"");
         }
         @Override
         public TodoCardHolder onCreateViewHolder(ViewGroup v, int i){
@@ -145,6 +207,7 @@ public class CardFragment extends Fragment {
         super.onResume();
         updateUI();
     }
+
     private void updateUI() {
         mItemHolder = TodoItemHolder.get(getActivity());
         List<TodoItem> items = mItemHolder.getTodoItems();
@@ -162,9 +225,11 @@ public class CardFragment extends Fragment {
 
         public static final String NAME = "name";
         public static final String UUID = "uuid";
+        public static final String TIME = "time";
 
 
         protected TextView vName;
+        protected TextView vTime;
         protected TodoItem vItem;
         protected View view;
 
@@ -176,6 +241,8 @@ public class CardFragment extends Fragment {
                 public void onClick(View v) {
 
                     Intent intent = new Intent(getActivity(),CreateActivity.class);
+                    intent.putExtra(TIME,vItem.getTimeRemaining());
+
                     intent.putExtra(NAME,vItem.getName());
                     intent.putExtra(UUID,vItem.getUUID());
                     startActivity(intent);
@@ -183,6 +250,7 @@ public class CardFragment extends Fragment {
                 }
             });
             vName = (TextView) v.findViewById(R.id.item_name);
+            vTime = (TextView) v.findViewById(R.id.item_time);
 
         }
         public void setItem(TodoItem item){
