@@ -58,14 +58,14 @@ public class AddItemFragment extends Fragment {
                 if( getActivity().getIntent().getSerializableExtra(CardFragment.TodoCardHolder.UUID)!=null){
                     mCreateButton.setText("Update");
                     TodoItem item = mItemHolder.getItem(UUID.fromString(getActivity().getIntent().getSerializableExtra(CardFragment.TodoCardHolder.UUID).toString()));
-                    item.setTimeRemaining(mTimeSpinner.getHour());
+                    item.setTimeRemaining(mTimeSpinner.getHour()*60000+mTimeSpinner.getMinute()*1000);
                     item.setName(mDescription.getText().toString());
 
                     mItemHolder.updateItem(item);
 
                 }
                 else {
-                    mItemHolder.addItem(mTimeSpinner.getHour(), mDescription.getText().toString());
+                    mItemHolder.addItem(mTimeSpinner.getHour()*60000+mTimeSpinner.getMinute()*1000, mDescription.getText().toString());
 
                 }
                 getActivity().finish();

@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by daniel on 6/28/16.
@@ -29,6 +30,8 @@ public class CardFragment extends Fragment {
     private TodoItemHolder mItemHolder;
     private CardAdapter mAdapter;
     private RecyclerView mRecyclerView;
+    private boolean started;
+    private CountDownTimer mTimer;
 
     public static CardFragment newInstance(){
         return new CardFragment();
@@ -46,7 +49,7 @@ public class CardFragment extends Fragment {
         mRecyclerView = (RecyclerView) view.findViewById(R.id.card_list);
         mRecyclerView.setHasFixedSize(true);
 
-        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        final LinearLayoutManager llm = new LinearLayoutManager(getActivity());
 
         llm.setOrientation(LinearLayoutManager.VERTICAL);
 
@@ -69,7 +72,18 @@ public class CardFragment extends Fragment {
         mStartButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startTimer();
+                if(started){
+
+                    started = false;
+                    stopTimer();
+
+                }
+                else {
+                    started = true;
+                    mStartButton.setText(R.string.cancel_timer);
+                    startTimer();
+
+                }
             }
 
         });
@@ -80,13 +94,13 @@ public class CardFragment extends Fragment {
     }
 
     /**
-     * Provides functionality for the timer side of the application.
+     * Provides functionality to start the timer on this end of the application.
      */
-    public void startTimer(){
+    private void startTimer(){
         TodoItem item = mAdapter.getItem(0);
         if (!item.equals(null)) {
             int time = item.getTimeRemaining();
-            CountDownTimer timer = new CountDownTimer(time * 1000, 1000) {
+            mTimer = new CountDownTimer(time, 1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
                     Toast.makeText(getContext(), millisUntilFinished+"", Toast.LENGTH_SHORT).show();
@@ -101,8 +115,13 @@ public class CardFragment extends Fragment {
                     }
                 }
             };
-            timer.start();
+            mTimer.start();
         }
+    }
+
+    private void stopTimer(){
+        mStartButton.setText(R.string.start_timer);
+        mTimer.cancel();
     }
 
     @Override
@@ -193,10 +212,14 @@ public class CardFragment extends Fragment {
             TodoItem item = mItemList.get(i);
             cardHolder.setItem(item);
             cardHolder.vName.setText(item.getName());
-            cardHolder.vTime.setText(item.getTimeRemaining()+"");
+            cardHolder.vTime.setText(String.format("%d min, %d sec",
+                    TimeUnit.MILLISECONDS.toMinutes(item.getTimeRemaining()),
+                    TimeUnit.MILLISECONDS.toSeconds(item.getTimeRemaining()) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(item.getTimeRemaining()))));
         }
         @Override
         public TodoCardHolder onCreateViewHolder(ViewGroup v, int i){
+            Toast.makeText(getContext(),i+"",Toast.LENGTH_SHORT).show();
             View itemView = LayoutInflater.from(v.getContext()).inflate(R.layout.card_layout,v,false);
             return new TodoCardHolder(itemView);
         }
